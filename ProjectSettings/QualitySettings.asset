@@ -281,3 +281,4 @@ QualitySettings:
     PS5: 2
     Server: 3
     Standalone: 3
+    WebGL: 0
