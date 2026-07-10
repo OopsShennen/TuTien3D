@@ -1,3 +1,4 @@
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -8,7 +9,7 @@ namespace StarterAssets
 {
     [RequireComponent(typeof(CharacterController))]
     [RequireComponent(typeof(PlayerInput))]
-    public class ThirdPersonController : MonoBehaviour
+    public class ThirdPersonController : NetworkBehaviour
     {
         [Header("Player")]
         [Tooltip("Move speed of the character in m/s")]
@@ -120,12 +121,19 @@ namespace StarterAssets
             {
                 _mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
             }
+
         }
 
-        private void Start()
+        public override void OnNetworkSpawn()
         {
+            if (!IsOwner)
+            {
+                return;
+            }
+
+            Debug.Log($"Spawn Player - ClientId: {OwnerClientId}, IsOwner: {IsOwner}");
             _cinemachineTargetYaw = CinemachineCameraTarget.transform.rotation.eulerAngles.y;
-            
+
             _hasAnimator = TryGetComponent(out _animator);
             _controller = GetComponent<CharacterController>();
             _input = GetComponent<StarterAssetsInputs>();
@@ -136,10 +144,14 @@ namespace StarterAssets
             // reset our timeouts on start
             _jumpTimeoutDelta = JumpTimeout;
             _fallTimeoutDelta = FallTimeout;
-        }
 
+        }
+       
         private void Update()
         {
+            if (!IsOwner)
+
+                return;
             _hasAnimator = TryGetComponent(out _animator);
 
             JumpAndGravity();
@@ -149,6 +161,10 @@ namespace StarterAssets
 
         private void LateUpdate()
         {
+            if (!IsOwner)
+
+                return;
+
             CameraRotation();
         }
 
