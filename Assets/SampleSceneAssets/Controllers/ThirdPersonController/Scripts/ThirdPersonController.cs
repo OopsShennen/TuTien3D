@@ -9,7 +9,7 @@ namespace StarterAssets
 {
     [RequireComponent(typeof(CharacterController))]
     [RequireComponent(typeof(PlayerInput))]
-    public class ThirdPersonController : NetworkBehaviour
+    public class ThirdPersonController : MonoBehaviour
     {
         [Header("Player")]
         [Tooltip("Move speed of the character in m/s")]
@@ -56,6 +56,10 @@ namespace StarterAssets
         [Tooltip("What layers the character uses as ground")]
         public LayerMask GroundLayers;
 
+        [Header("Player Crouched")]
+        [Tooltip("If the character is crouched or not. Not part of the CharacterController built in crouched check")]
+        public bool Crouched;
+
         [Header("Cinemachine")]
         [Tooltip("The follow target set in the Cinemachine Virtual Camera that the camera will follow")]
         public GameObject CinemachineCameraTarget;
@@ -94,6 +98,7 @@ namespace StarterAssets
         private int _animIDJump;
         private int _animIDFreeFall;
         private int _animIDMotionSpeed;
+        private int _animIDCrouch;
 
         private PlayerInput _playerInput;
         private Animator _animator;
@@ -124,14 +129,9 @@ namespace StarterAssets
 
         }
 
-        public override void OnNetworkSpawn()
+        private void Start()
         {
-            if (!IsOwner)
-            {
-                return;
-            }
 
-            Debug.Log($"Spawn Player - ClientId: {OwnerClientId}, IsOwner: {IsOwner}");
             _cinemachineTargetYaw = CinemachineCameraTarget.transform.rotation.eulerAngles.y;
 
             _hasAnimator = TryGetComponent(out _animator);
@@ -149,21 +149,17 @@ namespace StarterAssets
        
         private void Update()
         {
-            if (!IsOwner)
 
-                return;
             _hasAnimator = TryGetComponent(out _animator);
 
             JumpAndGravity();
             GroundedCheck();
             Move();
+            Crouching();
         }
 
         private void LateUpdate()
         {
-            if (!IsOwner)
-
-                return;
 
             CameraRotation();
         }
@@ -175,6 +171,7 @@ namespace StarterAssets
             _animIDJump = Animator.StringToHash("Jump");
             _animIDFreeFall = Animator.StringToHash("FreeFall");
             _animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
+            _animIDCrouch = Animator.StringToHash("Crouch");
         }
 
         private void GroundedCheck()
@@ -215,6 +212,10 @@ namespace StarterAssets
 
         private void Move()
         {
+            if (Crouched)
+            {
+                return;
+            }
             // set target speed based on move speed, sprint speed and if sprint is pressed
             float targetSpeed = _input.sprint ? SprintSpeed : MoveSpeed;
 
@@ -349,7 +350,20 @@ namespace StarterAssets
                 _verticalVelocity += Gravity * Time.deltaTime;
             }
         }
+        private void Crouching()
+        {
+            if (_input.crouch)
+            {
+                Crouched = true;
+                _animator.SetTrigger("Crouch");
 
+                _input.crouch = false;
+            }
+        }
+        public void EndCrouch()
+        {
+            Crouched = false;
+        }
         private static float ClampAngle(float lfAngle, float lfMin, float lfMax)
         {
             if (lfAngle < -360f) lfAngle += 360f;
