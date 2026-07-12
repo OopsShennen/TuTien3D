@@ -14,7 +14,7 @@ namespace StarterAssets
         [Header("Player")]
         [Tooltip("Move speed of the character in m/s")]
         public float MoveSpeed = 2.0f;
-
+        public bool CanMove = true;
         [Tooltip("Sprint speed of the character in m/s")]
         public float SprintSpeed = 5.335f;
 
@@ -100,6 +100,7 @@ namespace StarterAssets
         private int _animIDMotionSpeed;
         private int _animIDCrouch;
 
+
         private PlayerInput _playerInput;
         private Animator _animator;
         private CharacterController _controller;
@@ -152,10 +153,11 @@ namespace StarterAssets
 
             _hasAnimator = TryGetComponent(out _animator);
 
+            Crouching();
             JumpAndGravity();
             GroundedCheck();
             Move();
-            Crouching();
+
         }
 
         private void LateUpdate()
@@ -212,6 +214,8 @@ namespace StarterAssets
 
         private void Move()
         {
+            if (!CanMove)
+                return;
             if (Crouched)
             {
                 return;
@@ -352,17 +356,21 @@ namespace StarterAssets
         }
         private void Crouching()
         {
+            if (_hasAnimator)
+            {
+                _animator.SetBool(_animIDCrouch, _input.crouch);
+            }
+
             if (_input.crouch)
             {
                 Crouched = true;
-                _animator.SetTrigger("Crouch");
-
-                _input.crouch = false;
+                CanMove = false;
             }
         }
         public void EndCrouch()
         {
             Crouched = false;
+            CanMove = true;
         }
         private static float ClampAngle(float lfAngle, float lfMin, float lfMax)
         {

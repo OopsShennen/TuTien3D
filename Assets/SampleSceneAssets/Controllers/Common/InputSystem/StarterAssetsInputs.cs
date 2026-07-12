@@ -11,8 +11,9 @@ namespace StarterAssets
 		public bool jump;
 		public bool sprint;
 		public bool crouch;
+        public bool interact;
 
-		[Header("Movement Settings")]
+        [Header("Movement Settings")]
 		public bool analogMovement;
 
 		[Header("Mouse Cursor Settings")]
@@ -46,11 +47,15 @@ namespace StarterAssets
 		{
             if (value.isPressed)
             {
-                crouch = true;
+                crouch = !crouch;
             }
         }
+        public void OnInteract(InputValue value)
+        {
+            interact = value.isPressed;
+        }
 
-		public void MoveInput(Vector2 newMoveDirection)
+        public void MoveInput(Vector2 newMoveDirection)
 		{
 			move = newMoveDirection;
 		} 
