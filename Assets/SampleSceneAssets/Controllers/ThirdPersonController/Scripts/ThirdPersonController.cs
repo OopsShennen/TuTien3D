@@ -93,12 +93,10 @@ namespace StarterAssets
         private float _fallTimeoutDelta;
 
         // animation IDs
-        private int _animIDSpeed;
         private int _animIDGrounded;
         private int _animIDJump;
         private int _animIDFreeFall;
-        private int _animIDMotionSpeed;
-        private int _animIDCrouch;
+
 
 
         private PlayerInput _playerInput;
@@ -168,12 +166,9 @@ namespace StarterAssets
 
         private void AssignAnimationIDs()
         {
-            _animIDSpeed = Animator.StringToHash("Speed");
             _animIDGrounded = Animator.StringToHash("Grounded");
             _animIDJump = Animator.StringToHash("Jump");
             _animIDFreeFall = Animator.StringToHash("FreeFall");
-            _animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
-            _animIDCrouch = Animator.StringToHash("Crouch");
         }
 
         private void GroundedCheck()
@@ -216,13 +211,22 @@ namespace StarterAssets
         {
             if (!CanMove)
                 return;
-            if (Crouched)
-            {
-                return;
-            }
+           
             // set target speed based on move speed, sprint speed and if sprint is pressed
             float targetSpeed = _input.sprint ? SprintSpeed : MoveSpeed;
 
+            if (Crouched)
+            {
+                targetSpeed = MoveSpeed * 0.5f;
+            }
+            else if (_input.sprint)
+            {
+                targetSpeed = SprintSpeed;
+            }
+            else
+            {
+                targetSpeed = MoveSpeed;
+            }
             // a simplistic acceleration and deceleration designed to be easy to remove, replace, or iterate upon
 
             // note: Vector2's == operator uses approximation so is not floating point error prone, and is cheaper than magnitude
@@ -255,34 +259,114 @@ namespace StarterAssets
             _animationBlend = Mathf.Lerp(_animationBlend, targetSpeed, Time.deltaTime * SpeedChangeRate);
             if (_animationBlend < 0.01f) _animationBlend = 0f;
 
-            // normalise input direction
-            Vector3 inputDirection = new Vector3(_input.move.x, 0.0f, _input.move.y).normalized;
+
+
+            Vector3 forward = _mainCamera.transform.forward;
+            Vector3 right = _mainCamera.transform.right;
+
+            forward.y = 0f;
+            right.y = 0f;
+
+            forward.Normalize();
+            right.Normalize();
+
+            Vector3 moveDirection = forward * _input.move.y + right * _input.move.x;
+
+            // move the player
+            _controller.Move(moveDirection.normalized * (_speed * Time.deltaTime) +
+                             new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
+
 
             // note: Vector2's != operator uses approximation so is not floating point error prone, and is cheaper than magnitude
             // if there is a move input rotate player when the player is moving
             if (_input.move != Vector2.zero)
             {
-                _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
-                                  _mainCamera.transform.eulerAngles.y;
-                float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity,
-                    RotationSmoothTime);
+                if (moveDirection.sqrMagnitude > 0.01f)
+                {
+                    if (_input.sprint && _input.move.y >= 0)
+                    {
+                        _targetRotation = Mathf.Atan2(moveDirection.x, moveDirection.z) * Mathf.Rad2Deg;
 
-                // rotate to face input direction relative to camera position
-                transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
+                        float rotation = Mathf.SmoothDampAngle(
+                            transform.eulerAngles.y,
+                            _targetRotation,
+                            ref _rotationVelocity,
+                            RotationSmoothTime);
+
+                        transform.rotation = Quaternion.Euler(0, rotation, 0);
+                    }
+                    else
+                    {
+                        if (Crouched && _input.move.y < 0)
+                        {
+                            // Ngồi + S -> quay 180 độ để dùng animation đi tới
+                            _targetRotation = _mainCamera.transform.eulerAngles.y + 180f;
+                        }
+                     
+                        else
+                        {
+                            if (_input.move.y < 0)
+                            {
+                                // Đi lùi: chỉ xoay theo camera
+                                _targetRotation = _mainCamera.transform.eulerAngles.y;
+                            }
+                            else
+                            {
+                                // W, A, D, W+A, W+D...
+                                _targetRotation = Mathf.Atan2(moveDirection.x, moveDirection.z) * Mathf.Rad2Deg;
+                            }
+                        }
+
+                        float rotation = Mathf.SmoothDampAngle(
+                            transform.eulerAngles.y,
+                            _targetRotation,
+                            ref _rotationVelocity,
+                            RotationSmoothTime);
+
+                        transform.rotation = Quaternion.Euler(0, rotation, 0);
+                    }
+                }
             }
 
-
-            Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
-
-            // move the player
-            _controller.Move(targetDirection.normalized * (_speed * Time.deltaTime) +
-                             new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
-
-            // update animator if using character
             if (_hasAnimator)
             {
-                _animator.SetFloat(_animIDSpeed, _animationBlend);
-                _animator.SetFloat(_animIDMotionSpeed, inputMagnitude);
+                float velX = 0f;
+                float velY = 0f;
+
+                if (Crouched)
+                {
+                    velX = _input.move.x;
+
+                    if (_input.move != Vector2.zero)
+                    {
+                        velY = 0.5f;      // luôn dùng animation Crouch Walk Forward
+                    }
+                }
+                else if (_input.move.y < -0.1f)
+                {
+                    velX = 0f;
+                    velY = _input.sprint ? -1f : -0.5f;
+                }
+                // Sprint
+                else if (_input.sprint && _input.move != Vector2.zero)
+                {
+                    velX = 0f;
+                    velY = 5f;
+                }
+                // Walk
+                else
+                {
+                    velX = _input.move.x;
+
+                    if (_input.move.y > 0)
+                        velY = 1.5f;
+
+                    if (Mathf.Abs(_input.move.x) > 0.1f && Mathf.Abs(_input.move.y) < 0.1f)
+                        velY = 0f;
+                }
+
+                _animator.SetFloat("VelocityX", velX, 0.1f, Time.deltaTime);
+                _animator.SetFloat("VelocityY", velY, 0.1f, Time.deltaTime);
             }
         }
 
@@ -354,24 +438,53 @@ namespace StarterAssets
                 _verticalVelocity += Gravity * Time.deltaTime;
             }
         }
+
         private void Crouching()
         {
-            if (_hasAnimator)
+
+            if (!_hasAnimator)
+                return;
+
+            if (Crouched && _input.sprint)
             {
-                _animator.SetBool(_animIDCrouch, _input.crouch);
+                Crouched = false;
+                _input.crouch = false;
+
+                _animator.SetFloat("CrouchValue", 0);
+                _animator.SetTrigger("CrouchToSprint");
+
             }
 
             if (_input.crouch)
             {
                 Crouched = true;
-                CanMove = false;
+                _animator.SetFloat("CrouchValue", 1f);
             }
+            if (!_input.crouch && !_input.sprint)
+            {
+                Crouched = false;
+                _animator.SetFloat("CrouchValue", 0f);
+            }
+
         }
+       
         public void EndCrouch()
         {
             Crouched = false;
             CanMove = true;
+
         }
+        public void LockMovement()
+        {
+
+            CanMove = false;
+        }
+        public void UnlockMovement()
+        {
+            Crouched = true;
+            CanMove = true;
+        }
+
         private static float ClampAngle(float lfAngle, float lfMin, float lfMax)
         {
             if (lfAngle < -360f) lfAngle += 360f;
