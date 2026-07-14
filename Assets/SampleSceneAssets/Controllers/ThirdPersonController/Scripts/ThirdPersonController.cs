@@ -60,6 +60,10 @@ namespace StarterAssets
         [Tooltip("If the character is crouched or not. Not part of the CharacterController built in crouched check")]
         public bool Crouched;
 
+        [Header("Player Cover")]
+        [Tooltip("If the character is covered or not. Not part of the CharacterController built in covered check")]
+        public bool IsCover;
+
         [Header("Cinemachine")]
         [Tooltip("The follow target set in the Cinemachine Virtual Camera that the camera will follow")]
         public GameObject CinemachineCameraTarget;
@@ -104,6 +108,7 @@ namespace StarterAssets
         private CharacterController _controller;
         private StarterAssetsInputs _input;
         private GameObject _mainCamera;
+        private PlayerCover cover;
 
         private const float _threshold = 0.01f;
 
@@ -137,6 +142,7 @@ namespace StarterAssets
             _controller = GetComponent<CharacterController>();
             _input = GetComponent<StarterAssetsInputs>();
             _playerInput = GetComponent<PlayerInput>();
+            cover = GetComponent<PlayerCover>();
 
             AssignAnimationIDs();
 
@@ -270,7 +276,19 @@ namespace StarterAssets
             forward.Normalize();
             right.Normalize();
 
-            Vector3 moveDirection = forward * _input.move.y + right * _input.move.x;
+            Vector3 moveDirection;
+
+            if (!IsCover)
+            {
+                moveDirection =
+                    forward * _input.move.y +
+                    right * _input.move.x;
+            }
+            else
+            {
+                moveDirection = cover.WallDirection * _input.move.x;
+            }
+
 
             // move the player
             _controller.Move(moveDirection.normalized * (_speed * Time.deltaTime) +
@@ -279,6 +297,8 @@ namespace StarterAssets
 
             // note: Vector2's != operator uses approximation so is not floating point error prone, and is cheaper than magnitude
             // if there is a move input rotate player when the player is moving
+            if (!IsCover) 
+           {
             if (_input.move != Vector2.zero)
             {
                 if (moveDirection.sqrMagnitude > 0.01f)
@@ -327,12 +347,22 @@ namespace StarterAssets
                     }
                 }
             }
+           }
 
             if (_hasAnimator)
             {
                 float velX = 0f;
                 float velY = 0f;
+                if (IsCover)
+                {
+                    if (_input.move.x > 0.1f)
+                        _animator.SetBool("CoverLeft", false);
 
+                    if (_input.move.x < -0.1f)
+                        _animator.SetBool("CoverLeft", true);
+
+                    _animator.SetFloat("VelocityX", _input.move.x, 0.1f, Time.deltaTime);
+                }
                 if (Crouched)
                 {
                     velX = _input.move.x;

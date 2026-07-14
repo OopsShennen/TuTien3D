@@ -4,7 +4,7 @@ using UnityEngine.UIElements;
 
 public class PlayerClimb : MonoBehaviour
 {
-    private PlayerFindObject findObject;
+    private PlayerFindObject finder;
     private ThirdPersonController controller;
     private StarterAssetsInputs input;
     private Animator animator;
@@ -17,7 +17,7 @@ public class PlayerClimb : MonoBehaviour
 
     private void Awake()
     {
-        findObject = GetComponent<PlayerFindObject>();
+        finder = GetComponent<PlayerFindObject>();
         animator = GetComponent<Animator>();
         input = GetComponent<StarterAssetsInputs>();
         controller = GetComponent<ThirdPersonController>();
@@ -39,28 +39,20 @@ public class PlayerClimb : MonoBehaviour
                 EndClimb();
             }
 
-            return;
         }
-            
 
-        if (input.interact)
-        {
-            TryClimb();
-
-            input.interact = false;
-        }
     }
 
-    void TryClimb()
+    public void TryClimb()
     {
-        if (findObject.currentTarget == null)
+        if (finder.currentTarget == null)
             return;
 
-        if (!findObject.currentTarget.TryGetComponent(out Climbable climbable))
+        if (!finder.currentTarget.TryGetComponent(out Climbable climbable))
             return;
 
         // Lấy thông tin từ Raycast đầu tiên
-        RaycastHit wallHit = findObject.currentHit;
+        RaycastHit wallHit = finder.currentHit;
 
         Vector3 hitPoint = wallHit.point;
         Vector3 normal = wallHit.normal;

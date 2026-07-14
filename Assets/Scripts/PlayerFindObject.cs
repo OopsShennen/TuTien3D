@@ -2,6 +2,14 @@ using UnityEngine;
 
 public class PlayerFindObject : MonoBehaviour
 {
+    public enum InteractType
+    {
+        None,
+        Cover,
+        Climb
+    }
+
+    public InteractType currentType;
     [Header("Find Settings")]
     public LayerMask targetLayer;
     public float distance = 0.5f;
@@ -15,24 +23,32 @@ public class PlayerFindObject : MonoBehaviour
     }
     private void Update()
     {
-        InvokeRepeating(nameof(FindObject), 0f, 0.05f);
+        FindObject();
     }
 
     void FindObject()
     {
+
         currentTarget = null;
+        currentType = InteractType.None;
+        hasTarget = false;
 
         Vector3 origin = transform.position + Vector3.up * (_characterController.height * 0.5f);
 
-        hasTarget = Physics.Raycast(origin, transform.forward, out RaycastHit hit, distance, targetLayer);
-        if (hasTarget)
+        if (Physics.Raycast(origin, transform.forward, out RaycastHit hit, distance, targetLayer))
         {
+            hasTarget = true;
             currentHit = hit;
             currentTarget = hit.transform;
-        }
-        else
-        {
-            currentTarget = null;
+
+            if (hit.collider.TryGetComponent(out Cover _))
+            {
+                currentType = InteractType.Cover;
+            }
+            else if (hit.collider.TryGetComponent(out Climbable _))
+            {
+                currentType = InteractType.Climb;
+            }
         }
     }
 
