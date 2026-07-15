@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class Climbable : MonoBehaviour
 {
-    [Header("Điểm người chơi sẽ đứng sau khi leo")]
+
+    public bool isHighClimb;
     public float maxClimbHeight = 3f;
 }

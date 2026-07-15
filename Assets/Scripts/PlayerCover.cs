@@ -5,6 +5,18 @@ using UnityEngine.Windows;
 
 public class PlayerCover : MonoBehaviour
 {
+    public enum CoverState
+    {
+        None,
+        Entering,
+        Idle,
+        Moving,
+        Peeking,
+        Exiting
+    }
+
+    public CoverState State;
+
     private PlayerFindObject finder;
     private ThirdPersonController controller;
     private Animator animator;
@@ -12,7 +24,7 @@ public class PlayerCover : MonoBehaviour
     private StarterAssetsInputs input;
     private bool isTransition;
     private bool isEnteringCover;
-
+    public bool CanPeek { get; private set; }
     [SerializeField] private float coverDistance = 0.2f;
     [SerializeField] private float snapSpeed = 1f;
     [SerializeField] private float edgeCheckDistance = 0.4f;
@@ -33,32 +45,43 @@ public class PlayerCover : MonoBehaviour
         if (isTransition)
             return;
 
-        if (isTransition || isEnteringCover)
+        if (!finder.hasTarget)
             return;
 
         isTransition = true;
-
-        if (!finder.hasTarget)
-        {
-            return;
-        }
+        State = CoverState.Entering;
 
         StartCoroutine(MoveToCover());
+
     }
     private void Update()
     {
         UpdateWall();
         SnapToWall();
-        if (controller.IsCover)
+        CheckEdge();
+        if (!CanPeek)
         {
-            CheckEdge();
+            animator.SetBool("Peek", false);
+            return;
+        }
+
+
+        if (input.aim)
+        {
+            State = CoverState.Peeking;
+            animator.SetBool("Peek", true);
+        }
+        else
+        {
+            State = CoverState.Idle;
+            animator.SetBool("Peek", false);
         }
 
     }
     public void ExitCover()
     {
         controller.CanMove = false;
-
+        State = CoverState.Exiting;
         animator.SetTrigger("ExitCover");
     }
     public void FinishEnterCover()
@@ -70,19 +93,42 @@ public class PlayerCover : MonoBehaviour
         animator.SetBool("Cover", true);
 
         controller.CanMove = true;
+
         isTransition = false;
+
+        State = CoverState.Idle;
+
+        CanPeek = true;
+
+        input.canAim = true;
     }
     public void FinishExitCover()
     {
         input.move = Vector2.zero;
+
         controller.IsCover = false;
+
+        animator.SetBool("Cover", false);
+
         controller.CanMove = true;
+
         isTransition = false;
+
+        State = CoverState.None;
+
+        CanPeek = false;
+
+        input.canAim = false;
+        input.aim = false;
     }
     public void ExitCoverInstant()
     {
         controller.IsCover = false;
 
+        CanPeek = false;
+        input.canAim = false;
+        input.aim = false;
+        State = CoverState.None;
         animator.SetBool("Cover", false);
 
         controller.CanMove = true;
@@ -165,8 +211,9 @@ public class PlayerCover : MonoBehaviour
             if (Vector3.Dot(WallDirection, _mainCamera.transform.right) < 0)
                 WallDirection = -WallDirection;
             float distance = Vector3.Dot(
-               transform.position - hit.point,
-               hit.normal);
+                 transform.position - hit.point,
+                 hit.normal);
+
             float offset = distance - coverDistance;
 
             transform.position -= hit.normal * offset;

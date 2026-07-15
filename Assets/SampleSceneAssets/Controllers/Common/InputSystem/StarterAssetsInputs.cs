@@ -12,6 +12,8 @@ namespace StarterAssets
 		public bool sprint;
 		public bool crouch;
         public bool interact;
+        public bool aim;
+        public bool canAim;
 
         [Header("Movement Settings")]
 		public bool analogMovement;
@@ -24,8 +26,20 @@ namespace StarterAssets
 		{
 			MoveInput(value.Get<Vector2>());
 		}
+        public void OnAim(InputValue value)
+        {
+            Debug.Log("Mouse Right: " + value.isPressed);
 
-		public void OnLook(InputValue value)
+            if (canAim)
+            {
+                aim = value.isPressed;
+            }
+            else
+            {
+                aim = false;
+            }
+        }
+        public void OnLook(InputValue value)
 		{
 			if(cursorInputForLook)
 			{
@@ -78,6 +92,10 @@ namespace StarterAssets
 		public void CrouchInput(bool newCrouchState)
 		{
 			crouch = newCrouchState;
+		}
+		public void InteractInput(bool newInteractState)
+		{
+			interact = newInteractState;
 		}
 
 		private void OnApplicationFocus(bool hasFocus)
