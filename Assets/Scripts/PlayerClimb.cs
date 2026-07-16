@@ -1,6 +1,5 @@
 using StarterAssets;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class PlayerClimb : MonoBehaviour
 {
@@ -47,6 +46,9 @@ public class PlayerClimb : MonoBehaviour
 
     public void TryClimb()
     {
+        if (controller.IsBusy)
+            return;
+
         if (finder.currentTarget == null)
             return;
 
@@ -58,10 +60,8 @@ public class PlayerClimb : MonoBehaviour
             return;
         }
         // Lấy thông tin từ Raycast đầu tiên
-        RaycastHit wallHit = finder.currentHit;
-
-        Vector3 hitPoint = wallHit.point;
-        Vector3 normal = wallHit.normal;
+        Vector3 hitPoint = finder.currentHit.point;
+        Vector3 normal = finder.currentHit.normal;
 
         // Điểm kiểm tra ở phía trên tường
         Vector3 checkPos = hitPoint + Vector3.up * climbable.maxClimbHeight;
@@ -69,6 +69,8 @@ public class PlayerClimb : MonoBehaviour
         // Raycast xuống để tìm mặt trên của tường
         if (!Physics.Raycast(checkPos, Vector3.down, out RaycastHit topHit, climbable.maxClimbHeight + 1f))
             return;
+
+        controller.State = ThirdPersonController.PlayerState.Climb;
 
         // Đẩy người chơi vào trong một chút sau khi leo xong
         endPos = topHit.point + Vector3.up * 0.05f - normal * 0.05f;
@@ -93,6 +95,8 @@ public class PlayerClimb : MonoBehaviour
 
     public void EndClimb()
     {
+        controller.State = ThirdPersonController.PlayerState.Locomotion;
+
         controller.CanMove = true;
         isClimbing = false;
     }

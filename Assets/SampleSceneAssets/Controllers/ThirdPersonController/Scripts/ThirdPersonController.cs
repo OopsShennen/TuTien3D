@@ -2,7 +2,6 @@ using Unity.Cinemachine;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
-
 /* Note: animations are called via the controller for both the character and capsule using animator null checks
  */
 
@@ -12,6 +11,18 @@ namespace StarterAssets
     [RequireComponent(typeof(PlayerInput))]
     public class ThirdPersonController : MonoBehaviour
     {
+        public enum PlayerState
+        {
+            Locomotion,
+            Cover,
+            Climb,
+            Slide,
+            Jump,
+            Fall,
+            Crouch
+        }
+
+        public PlayerState State;
         [Header("Player")]
         [Tooltip("Move speed of the character in m/s")]
         public float MoveSpeed = 2.0f;
@@ -65,6 +76,12 @@ namespace StarterAssets
         [Tooltip("If the character is covered or not. Not part of the CharacterController built in covered check")]
         public bool IsCover;
 
+        [Header("Player Slide")]
+        [Tooltip("If the character is Slided or not. Not part of the CharacterController built in Slided check")]
+        [SerializeField] private float slideCooldown = 0.8f;
+        private float lastSlideTime = -Mathf.Infinity;
+        public bool IsSlide;
+
         [Header("Cinemachine")]
         [Tooltip("The follow target set in the Cinemachine Virtual Camera that the camera will follow")]
         public GameObject CinemachineCameraTarget;
@@ -101,8 +118,6 @@ namespace StarterAssets
         private int _animIDGrounded;
         private int _animIDJump;
         private int _animIDFreeFall;
-
-
 
         private PlayerInput _playerInput;
         private Animator _animator;
@@ -164,6 +179,20 @@ namespace StarterAssets
             GroundedCheck();
             Move();
 
+            if (_input.slide)
+            {
+                if (CanSlide())
+                {
+                    _input.slide = false;
+                    StartSlide();
+                }
+                else
+                {
+                    // Hủy yêu cầu Slide nếu không hợp lệ
+                    _input.slide = false;
+                }
+            }
+
         }
 
         private void LateUpdate()
@@ -178,6 +207,10 @@ namespace StarterAssets
             _animIDJump = Animator.StringToHash("Jump");
             _animIDFreeFall = Animator.StringToHash("FreeFall");
         }
+        public bool IsBusy =>
+             IsSlide ||
+             State == PlayerState.Climb ||
+             State == PlayerState.Cover;
 
         private void GroundedCheck()
         {
@@ -356,6 +389,8 @@ namespace StarterAssets
                 float velY = 0f;
                 if (IsCover)
                 {
+                    _input.sprint = false;
+
                     if (_input.move.x > 0.1f)
                         _animator.SetBool("CoverLeft", false);
 
@@ -405,6 +440,14 @@ namespace StarterAssets
         {
             if (Grounded)
             {
+                if (State != PlayerState.Climb &&
+                       State != PlayerState.Slide &&
+                       State != PlayerState.Cover)
+                {
+                    State = Crouched
+                        ? PlayerState.Crouch
+                        : PlayerState.Locomotion;
+                }
                 // reset the fall timeout timer
                 _fallTimeoutDelta = FallTimeout;
 
@@ -422,8 +465,9 @@ namespace StarterAssets
                 }
 
                 // Jump
-                if (_input.jump && _jumpTimeoutDelta <= 0.0f)
+                if (_input.jump && _jumpTimeoutDelta <= 0 && !IsBusy)
                 {
+                    State = PlayerState.Jump;
                     // the square root of H * -2 * G = how much velocity needed to reach desired height
                     _verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * Gravity);
 
@@ -448,6 +492,7 @@ namespace StarterAssets
                 // fall timeout
                 if (_fallTimeoutDelta >= 0.0f)
                 {
+
                     _fallTimeoutDelta -= Time.deltaTime;
                 }
                 else
@@ -455,6 +500,7 @@ namespace StarterAssets
                     // update animator if using character
                     if (_hasAnimator)
                     {
+                        State = PlayerState.Fall;
                         _animator.SetBool(_animIDFreeFall, true);
                     }
                 }
@@ -469,7 +515,37 @@ namespace StarterAssets
                 _verticalVelocity += Gravity * Time.deltaTime;
             }
         }
+        private void StartSlide()
+        {
+            if (IsBusy)
+                return;
+            State = PlayerState.Slide;
 
+            IsSlide = true;
+            CanMove = false;
+            _animator.applyRootMotion = true;
+            lastSlideTime = Time.time;
+            _animator.SetTrigger("Slide");
+
+        }
+        public void EndSlide()
+        {
+            State = PlayerState.Locomotion;
+
+            IsSlide = false;
+            _input.slide = false;
+            _animator.applyRootMotion = false;
+            CanMove = true;
+        }
+        private bool CanSlide()
+        {
+            return !IsSlide &&
+                   Grounded &&
+                   Time.time >= lastSlideTime + slideCooldown &&
+                   State == PlayerState.Locomotion &&
+                   _input.sprint &&
+                   _input.move != Vector2.zero;
+        }
         private void Crouching()
         {
 
@@ -478,6 +554,7 @@ namespace StarterAssets
 
             if (Crouched && _input.sprint)
             {
+                
                 Crouched = false;
                 _input.crouch = false;
 
@@ -486,15 +563,17 @@ namespace StarterAssets
 
             }
 
-            if (_input.crouch)
+            if (_input.crouch && !IsBusy)
             {
+                State = PlayerState.Crouch;
                 Crouched = true;
-                _animator.SetFloat("CrouchValue", 1f);
+                _animator.SetFloat("CrouchValue", 1);
             }
-            if (!_input.crouch && !_input.sprint)
+            if (!_input.crouch && !_input.sprint && State == PlayerState.Crouch)
             {
+                State = PlayerState.Locomotion;
                 Crouched = false;
-                _animator.SetFloat("CrouchValue", 0f);
+                _animator.SetFloat("CrouchValue", 0);
             }
 
         }

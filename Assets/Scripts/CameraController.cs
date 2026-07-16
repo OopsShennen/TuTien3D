@@ -16,8 +16,9 @@ public class CameraController : MonoBehaviour
     [SerializeField] private float aimFOV = 30f;
 
     [SerializeField] private Vector3 normalShoulder = new Vector3(0.4f, 1.4f, 0);
-    [SerializeField] private Vector3 aimShoulder = new Vector3(0.7f, 1.4f, 0);
+    [SerializeField] private Vector3 rightPeekShoulder = new Vector3(0.7f, 1.4f, 0);
 
+    [SerializeField] private Vector3 leftPeekShoulder = new Vector3(-0.7f, 1.4f, 0);
     [SerializeField] private float normalDistance = 3.5f;
     [SerializeField] private float aimDistance = 2.3f;
 
@@ -26,17 +27,21 @@ public class CameraController : MonoBehaviour
 
     private void Update()
     {
-        if (cover == null || thirdPersonFollow == null)
-            return;
-
-
         bool aiming =
-              cover.CanPeek &&
-              cover.State == PlayerCover.CoverState.Peeking;
-
+             cover.CanPeek &&
+             cover.State == PlayerCover.CoverState.Peeking;
 
         float targetFOV = aiming ? aimFOV : normalFOV;
-        Vector3 targetShoulder = aiming ? aimShoulder : normalShoulder;
+
+        Vector3 targetShoulder = normalShoulder;
+
+        if (aiming)
+        {
+            targetShoulder = cover.CoverLeft
+                 ? leftPeekShoulder
+                 : rightPeekShoulder;
+        }
+
         float targetDistance = aiming ? aimDistance : normalDistance;
 
 

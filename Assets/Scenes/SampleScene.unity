@@ -1876,6 +1876,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: NestedParentArmature_Unpack
       objectReference: {fileID: 0}
+    - target: {fileID: 669718052072708274, guid: c708a3b79cd542b42bbfedb17e213bc1, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2650234582257683266, guid: c708a3b79cd542b42bbfedb17e213bc1, type: 3}
       propertyPath: field of view
       value: 40
@@ -1987,6 +1991,86 @@ PrefabInstance:
     - target: {fileID: 7326017790866764366, guid: c708a3b79cd542b42bbfedb17e213bc1, type: 3}
       propertyPath: m_DefaultControlScheme
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 7326017790866764366, guid: c708a3b79cd542b42bbfedb17e213bc1, type: 3}
+      propertyPath: m_NotificationBehavior
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7326017790866764366, guid: c708a3b79cd542b42bbfedb17e213bc1, type: 3}
+      propertyPath: m_ActionEvents.Array.size
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 7326017790866764366, guid: c708a3b79cd542b42bbfedb17e213bc1, type: 3}
+      propertyPath: m_ActionEvents.Array.data[4].m_ActionId
+      value: 934cfe21-9cd4-46ae-98eb-3caaf51e976b
+      objectReference: {fileID: 0}
+    - target: {fileID: 7326017790866764366, guid: c708a3b79cd542b42bbfedb17e213bc1, type: 3}
+      propertyPath: m_ActionEvents.Array.data[5].m_ActionId
+      value: 4184ca95-b4f1-4f9b-8ece-5eddf360f108
+      objectReference: {fileID: 0}
+    - target: {fileID: 7326017790866764366, guid: c708a3b79cd542b42bbfedb17e213bc1, type: 3}
+      propertyPath: m_ActionEvents.Array.data[6].m_ActionId
+      value: 0531bd06-fbd1-40c7-8f4c-23cc9df11d98
+      objectReference: {fileID: 0}
+    - target: {fileID: 7326017790866764366, guid: c708a3b79cd542b42bbfedb17e213bc1, type: 3}
+      propertyPath: m_ActionEvents.Array.data[4].m_ActionName
+      value: 'Player/Crouch[/Keyboard/leftCtrl]'
+      objectReference: {fileID: 0}
+    - target: {fileID: 7326017790866764366, guid: c708a3b79cd542b42bbfedb17e213bc1, type: 3}
+      propertyPath: m_ActionEvents.Array.data[5].m_ActionName
+      value: 'Player/Interact[/Keyboard/e]'
+      objectReference: {fileID: 0}
+    - target: {fileID: 7326017790866764366, guid: c708a3b79cd542b42bbfedb17e213bc1, type: 3}
+      propertyPath: m_ActionEvents.Array.data[6].m_ActionName
+      value: 'Player/Aim[/Mouse/rightButton]'
+      objectReference: {fileID: 0}
+    - target: {fileID: 7326017790866764366, guid: c708a3b79cd542b42bbfedb17e213bc1, type: 3}
+      propertyPath: m_DeviceLostEvent.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7326017790866764366, guid: c708a3b79cd542b42bbfedb17e213bc1, type: 3}
+      propertyPath: m_DeviceRegainedEvent.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7326017790866764366, guid: c708a3b79cd542b42bbfedb17e213bc1, type: 3}
+      propertyPath: m_ControlsChangedEvent.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7326017790866764366, guid: c708a3b79cd542b42bbfedb17e213bc1, type: 3}
+      propertyPath: m_DeviceLostEvent.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7326017790866764366, guid: c708a3b79cd542b42bbfedb17e213bc1, type: 3}
+      propertyPath: m_DeviceLostEvent.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: -944628639613478452, guid: 4419d82f33d36e848b3ed5af4c8da37e, type: 3}
+    - target: {fileID: 7326017790866764366, guid: c708a3b79cd542b42bbfedb17e213bc1, type: 3}
+      propertyPath: m_DeviceRegainedEvent.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7326017790866764366, guid: c708a3b79cd542b42bbfedb17e213bc1, type: 3}
+      propertyPath: m_ControlsChangedEvent.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7326017790866764366, guid: c708a3b79cd542b42bbfedb17e213bc1, type: 3}
+      propertyPath: m_DeviceLostEvent.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7326017790866764366, guid: c708a3b79cd542b42bbfedb17e213bc1, type: 3}
+      propertyPath: m_DeviceRegainedEvent.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: -944628639613478452, guid: 4419d82f33d36e848b3ed5af4c8da37e, type: 3}
+    - target: {fileID: 7326017790866764366, guid: c708a3b79cd542b42bbfedb17e213bc1, type: 3}
+      propertyPath: m_ControlsChangedEvent.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 11400000, guid: 9e7be553448fa2546aea5752021cbcf7, type: 2}
+    - target: {fileID: 7326017790866764366, guid: c708a3b79cd542b42bbfedb17e213bc1, type: 3}
+      propertyPath: m_DeviceRegainedEvent.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7326017790866764366, guid: c708a3b79cd542b42bbfedb17e213bc1, type: 3}
+      propertyPath: m_ControlsChangedEvent.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 7989648458623379704, guid: c708a3b79cd542b42bbfedb17e213bc1, type: 3}
       propertyPath: m_LocalPosition.x
@@ -32640,6 +32724,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerCover
   State: 0
+  CanPeek: 0
   coverDistance: 0.3
   snapSpeed: 10
   edgeCheckDistance: 0.4
@@ -32683,10 +32768,11 @@ MonoBehaviour:
   thirdPersonFollow: {fileID: 909908697}
   cover: {fileID: 2069000426}
   controller: {fileID: 2069000432}
-  normalFOV: 40
-  aimFOV: 30
-  normalShoulder: {x: 1, y: 0.29, z: 0}
-  aimShoulder: {x: 0.7, y: 1.4, z: 0}
+  normalFOV: 30
+  aimFOV: 25
+  normalShoulder: {x: 1, y: 0, z: 0}
+  rightPeekShoulder: {x: 5, y: 0, z: 0}
+  leftPeekShoulder: {x: -5, y: 0, z: 0}
   normalDistance: 3.5
   aimDistance: 2.3
   smooth: 10

@@ -2,6 +2,7 @@ using StarterAssets;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Windows;
+using static StarterAssets.ThirdPersonController;
 
 public class PlayerCover : MonoBehaviour
 {
@@ -23,8 +24,9 @@ public class PlayerCover : MonoBehaviour
     private GameObject _mainCamera;
     private StarterAssetsInputs input;
     private bool isTransition;
-    private bool isEnteringCover;
-    public bool CanPeek { get; private set; }
+    public bool CanPeek;
+    public bool CoverLeft { get; private set; }
+    
     [SerializeField] private float coverDistance = 0.2f;
     [SerializeField] private float snapSpeed = 1f;
     [SerializeField] private float edgeCheckDistance = 0.4f;
@@ -40,42 +42,48 @@ public class PlayerCover : MonoBehaviour
         _mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
     }
 
-    public void EnterCover()
-    {
-        if (isTransition)
-            return;
-
-        if (!finder.hasTarget)
-            return;
-
-        isTransition = true;
-        State = CoverState.Entering;
-
-        StartCoroutine(MoveToCover());
-
-    }
+    
     private void Update()
     {
+        if (!controller.IsCover)
+            return;
+
         UpdateWall();
         SnapToWall();
         CheckEdge();
+        if (input.move.x < -0.1f)
+        {
+            CoverLeft = true;
+            animator.SetBool("CoverLeft", input.move.x < -0.1f);
+        }
+        else if (input.move.x > 0.1f)
+        {
+            CoverLeft = false;
+            animator.SetBool("CoverLeft", false);
+        }
+
         if (!CanPeek)
         {
             animator.SetBool("Peek", false);
             return;
         }
 
+        bool peeking = input.aim;
 
-        if (input.aim)
-        {
-            State = CoverState.Peeking;
-            animator.SetBool("Peek", true);
-        }
-        else
-        {
-            State = CoverState.Idle;
-            animator.SetBool("Peek", false);
-        }
+        controller.CanMove = !peeking;
+        State = peeking ? CoverState.Peeking : CoverState.Idle;
+        animator.SetBool("Peek", peeking);
+
+    }
+    public void EnterCover()
+    {
+        if (controller.IsBusy || isTransition || !finder.hasTarget)
+            return;
+
+        isTransition = true;
+        State = CoverState.Entering;
+
+        StartCoroutine(MoveToCover());
 
     }
     public void ExitCover()
@@ -86,6 +94,8 @@ public class PlayerCover : MonoBehaviour
     }
     public void FinishEnterCover()
     {
+        controller.State = PlayerState.Cover;
+
         input.move = Vector2.zero;
 
         controller.IsCover = true;
@@ -99,11 +109,11 @@ public class PlayerCover : MonoBehaviour
         State = CoverState.Idle;
 
         CanPeek = true;
-
         input.canAim = true;
     }
     public void FinishExitCover()
     {
+        controller.State = PlayerState.Locomotion;
         input.move = Vector2.zero;
 
         controller.IsCover = false;
@@ -117,14 +127,12 @@ public class PlayerCover : MonoBehaviour
         State = CoverState.None;
 
         CanPeek = false;
-
         input.canAim = false;
         input.aim = false;
     }
     public void ExitCoverInstant()
     {
         controller.IsCover = false;
-
         CanPeek = false;
         input.canAim = false;
         input.aim = false;
@@ -133,6 +141,7 @@ public class PlayerCover : MonoBehaviour
 
         controller.CanMove = true;
 
+        animator.ResetTrigger("StandToCover");
         animator.ResetTrigger("ExitCover");
         input.move = Vector2.zero;
         animator.SetFloat("VelocityX", 0);
@@ -143,9 +152,6 @@ public class PlayerCover : MonoBehaviour
         controller.CanMove = false;
         input.move = Vector2.zero;
         float coverDistance = 0.2f;
-
-        float moveDistance =
-            finder.currentHit.distance * coverDistance;
 
         WallNormal = finder.currentHit.normal;
 
@@ -219,24 +225,19 @@ public class PlayerCover : MonoBehaviour
             transform.position -= hit.normal * offset;
         }
     }
+
     private void CheckEdge()
     {
         float horizontal = input.move.x;
 
-        if (horizontal < -0.1f)
-        {
-            if (!CheckWall(-WallDirection))
-            {
-                ExitCoverInstant();
-            }
-        }
+        if (Mathf.Abs(horizontal) < 0.1f)
+            return;
 
-        if (horizontal > 0.1f)
+        Vector3 dir = horizontal > 0 ? WallDirection : -WallDirection;
+
+        if (!CheckWall(dir))
         {
-            if (!CheckWall(WallDirection))
-            {
-                ExitCoverInstant();
-            }
+            ExitCoverInstant();
         }
     }
     private bool CheckWall(Vector3 side)

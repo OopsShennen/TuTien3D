@@ -14,7 +14,7 @@ namespace StarterAssets
         public bool interact;
         public bool aim;
         public bool canAim;
-
+        public bool slide;
         [Header("Movement Settings")]
 		public bool analogMovement;
 
@@ -26,18 +26,26 @@ namespace StarterAssets
 		{
 			MoveInput(value.Get<Vector2>());
 		}
-        public void OnAim(InputValue value)
+        private void Update()
         {
-            Debug.Log("Mouse Right: " + value.isPressed);
-
-            if (canAim)
-            {
-                aim = value.isPressed;
-            }
-            else
+            if (!canAim)
             {
                 aim = false;
+                return;
             }
+
+            aim = Mouse.current.rightButton.isPressed;
+        }
+        /*  public void OnAim(InputValue value)
+          {
+              Debug.Log($"OnAim gọi: {value.isPressed}");
+
+              aim = value.isPressed;
+          }*/
+        public void OnSlide(InputValue value)
+        {
+            if (value.isPressed)
+                slide = true;
         }
         public void OnLook(InputValue value)
 		{
