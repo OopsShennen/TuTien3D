@@ -21,20 +21,29 @@ namespace StarterAssets
 		[Header("Mouse Cursor Settings")]
 		public bool cursorLocked = true;
 		public bool cursorInputForLook = true;
+        private ThirdPersonController controller;
 
-		public void OnMove(InputValue value)
-		{
-			MoveInput(value.Get<Vector2>());
-		}
+        private void Awake()
+        {
+            controller = GetComponent<ThirdPersonController>();
+        }
+        
         private void Update()
         {
-            if (!canAim)
+            if (controller.InputLocked || !canAim)
             {
                 aim = false;
                 return;
             }
 
             aim = Mouse.current.rightButton.isPressed;
+        }
+        public void OnMove(InputValue value)
+        {
+            if (controller.InputLocked)
+                return;
+
+            MoveInput(value.Get<Vector2>());
         }
         /*  public void OnAim(InputValue value)
           {
@@ -44,6 +53,9 @@ namespace StarterAssets
           }*/
         public void OnSlide(InputValue value)
         {
+            if (controller.InputLocked)
+                return;
+
             if (value.isPressed)
                 slide = true;
         }
@@ -57,23 +69,33 @@ namespace StarterAssets
 
 		public void OnJump(InputValue value)
 		{
-			JumpInput(value.isPressed);
-		}
+            if (controller.InputLocked)
+                return;
+
+            JumpInput(value.isPressed);
+        }
 
 		public void OnSprint(InputValue value)
 		{
-			SprintInput(value.isPressed);
-		}
+            if (controller.InputLocked)
+                return;
+
+            SprintInput(value.isPressed);
+        }
 
 		public void OnCrouch(InputValue value)
 		{
+            if (controller.InputLocked)
+                return;
+
             if (value.isPressed)
-            {
                 crouch = !crouch;
-            }
         }
         public void OnInteract(InputValue value)
         {
+            if (controller.InputLocked)
+                return;
+
             interact = value.isPressed;
         }
 
@@ -115,6 +137,15 @@ namespace StarterAssets
 		{
 			Cursor.lockState = newState ? CursorLockMode.Locked : CursorLockMode.None;
 		}
-	}
+        public void ClearInput()
+        {
+            interact = false;
+            jump = false;
+            sprint = false;
+            crouch = false;
+            slide = false;
+            aim = false;
+        }
+    }
 	
 }

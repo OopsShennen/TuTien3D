@@ -2,6 +2,7 @@ using Unity.Cinemachine;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Windows;
 /* Note: animations are called via the controller for both the character and capsule using animator null checks
  */
 
@@ -18,6 +19,7 @@ namespace StarterAssets
             Climb,
             Slide,
             Jump,
+            JumpObstacle,
             Fall,
             Crouch
         }
@@ -44,6 +46,7 @@ namespace StarterAssets
         [Space(10)]
         [Tooltip("The height the player can jump")]
         public float JumpHeight = 1.2f;
+        private bool IsJumpObstacle;
 
         [Tooltip("The character uses its own gravity value. The engine default is -9.81f")]
         public float Gravity = -15.0f;
@@ -125,8 +128,10 @@ namespace StarterAssets
         private StarterAssetsInputs _input;
         private GameObject _mainCamera;
         private PlayerCover cover;
+        private PlayerFindObject finder;
+        private Climbable currentClimb;
 
-
+        public bool InputLocked;
         private const float _threshold = 0.01f;
 
         private bool _hasAnimator;
@@ -160,6 +165,7 @@ namespace StarterAssets
             _input = GetComponent<StarterAssetsInputs>();
             _playerInput = GetComponent<PlayerInput>();
             cover = GetComponent<PlayerCover>();
+            finder = GetComponent<PlayerFindObject>();
 
             AssignAnimationIDs();
 
@@ -175,9 +181,16 @@ namespace StarterAssets
             _hasAnimator = TryGetComponent(out _animator);
 
             Crouching();
-            JumpAndGravity();
+
             GroundedCheck();
-            Move();
+
+            if (State != PlayerState.JumpObstacle)
+            {
+                JumpAndGravity();
+                CheckJumpObstacle();
+                Move();
+            }
+
 
             if (_input.slide)
             {
@@ -208,9 +221,10 @@ namespace StarterAssets
             _animIDFreeFall = Animator.StringToHash("FreeFall");
         }
         public bool IsBusy =>
-             IsSlide ||
-             State == PlayerState.Climb ||
-             State == PlayerState.Cover;
+                InputLocked ||
+                IsSlide ||
+                State == PlayerState.Climb ||
+                State == PlayerState.Cover;
 
         private void GroundedCheck()
         {
@@ -226,7 +240,75 @@ namespace StarterAssets
                 _animator.SetBool(_animIDGrounded, Grounded);
             }
         }
+        private void CheckJumpObstacle()
+        {
+            if (!Grounded)
+                return;
 
+            if (State != PlayerState.Locomotion)
+                return;
+
+            if (IsJumpObstacle)
+                return;
+
+            if (!_input.sprint)
+                return;
+
+            if (_input.move.y < 0.8f)
+                return;
+
+            if (!finder.hasTarget)
+                return;
+
+            if (finder.currentType != PlayerFindObject.InteractType.Climb)
+                return;
+
+            Climbable climb = finder.currentTarget.GetComponent<Climbable>();
+
+            if (climb == null)
+                return;
+
+            // Chỉ Box mới JumpObstacle
+            if (!climb.isJumpObstacle)
+                return;
+
+            StartJumpObstacle(climb.transform);
+        }
+        private void StartJumpObstacle(Transform obstacle)
+        {
+            IsJumpObstacle = true;
+
+            State = PlayerState.JumpObstacle;
+
+            CanMove = false;
+
+            _controller.enabled = false;
+            _animator.applyRootMotion = true;
+
+            _animator.ResetTrigger("JumpBox");
+            _animator.SetTrigger("JumpBox");
+        }
+        public void EndJumpObstacle()
+        {
+            IsJumpObstacle = false;
+
+            State = PlayerState.Locomotion;
+
+            CanMove = true;
+            _controller.enabled = true;
+            _animator.applyRootMotion = false;
+        }
+        private void OnAnimatorMove()
+        {
+            if (State != PlayerState.JumpObstacle)
+                return;
+            transform.position += _animator.deltaPosition;
+            transform.rotation *= _animator.deltaRotation;
+
+            if (!_animator.GetCurrentAnimatorStateInfo(0)
+                .IsName("JumpBox"))
+                return;
+        }
         private void CameraRotation()
         {
             // if there is an input and camera position is not fixed
@@ -442,7 +524,7 @@ namespace StarterAssets
             {
                 if (State != PlayerState.Climb &&
                        State != PlayerState.Slide &&
-                       State != PlayerState.Cover)
+                       State != PlayerState.Cover && State != PlayerState.JumpObstacle)
                 {
                     State = Crouched
                         ? PlayerState.Crouch
@@ -465,7 +547,7 @@ namespace StarterAssets
                 }
 
                 // Jump
-                if (_input.jump && _jumpTimeoutDelta <= 0 && !IsBusy)
+                if (_input.jump && _jumpTimeoutDelta <= 0 && State == PlayerState.Locomotion)
                 {
                     State = PlayerState.Jump;
                     // the square root of H * -2 * G = how much velocity needed to reach desired height
@@ -519,6 +601,7 @@ namespace StarterAssets
         {
             if (IsBusy)
                 return;
+            _input.ClearInput();
             State = PlayerState.Slide;
 
             IsSlide = true;
@@ -565,12 +648,14 @@ namespace StarterAssets
 
             if (_input.crouch && !IsBusy)
             {
+
                 State = PlayerState.Crouch;
                 Crouched = true;
                 _animator.SetFloat("CrouchValue", 1);
             }
             if (!_input.crouch && !_input.sprint && State == PlayerState.Crouch)
             {
+                _input.ClearInput();
                 State = PlayerState.Locomotion;
                 Crouched = false;
                 _animator.SetFloat("CrouchValue", 0);

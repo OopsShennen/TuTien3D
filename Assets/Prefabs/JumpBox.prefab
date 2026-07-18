@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &914754188055760014
+--- !u!1 &663917527055861649
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,49 +8,81 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 3061061457625510473}
-  - component: {fileID: 8303301939287542475}
-  - component: {fileID: 620173884596133308}
-  - component: {fileID: 1425679938458011001}
-  - component: {fileID: 7322715485408550301}
+  - component: {fileID: 6889486559605738689}
   m_Layer: 10
-  m_Name: WallTallCanClimb
+  m_Name: ClimbTarget
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &3061061457625510473
+--- !u!4 &6889486559605738689
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 914754188055760014}
+  m_GameObject: {fileID: 663917527055861649}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -104.86, y: 6.75, z: 31.49}
-  m_LocalScale: {x: 5.004, y: 2.836968, z: 2.7923346}
+  m_LocalPosition: {x: 0, y: 0.479, z: -0.409}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6544865329756735685}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &4755162942836293496
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6544865329756735685}
+  - component: {fileID: 8531534734171527272}
+  - component: {fileID: 8781859749688016055}
+  - component: {fileID: 3973329494200294722}
+  - component: {fileID: 4114541815006242472}
+  - component: {fileID: 2475480583008419137}
+  m_Layer: 10
+  m_Name: JumpBox
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6544865329756735685
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4755162942836293496}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0.3796201, z: -0, w: 0.9251425}
+  m_LocalPosition: {x: -103.64, y: 6.63, z: 21.84}
+  m_LocalScale: {x: 5.008538, y: 1.3662924, z: 1.4073551}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 3489282697233048581}
+  - {fileID: 6889486559605738689}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &8303301939287542475
+  m_LocalEulerAnglesHint: {x: 0, y: -44.62, z: 0}
+--- !u!33 &8531534734171527272
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 914754188055760014}
+  m_GameObject: {fileID: 4755162942836293496}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!23 &620173884596133308
+--- !u!23 &8781859749688016055
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 914754188055760014}
+  m_GameObject: {fileID: 4755162942836293496}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -93,26 +125,40 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &1425679938458011001
+--- !u!114 &3973329494200294722
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 914754188055760014}
+  m_GameObject: {fileID: 4755162942836293496}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a032f798bb5aaa4ea83e8f32d726c34, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JumpBox
+--- !u!114 &4114541815006242472
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4755162942836293496}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dd68990c8e861774c88ccac5b7d59af5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Climable
-  maxClimbHeight: 3
---- !u!65 &7322715485408550301
+  isJumpObstacle: 1
+  isHighClimb: 0
+  maxClimbHeight: 0
+--- !u!65 &2475480583008419137
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 914754188055760014}
+  m_GameObject: {fileID: 4755162942836293496}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -127,34 +173,3 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!1 &1789915202414512906
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 3489282697233048581}
-  m_Layer: 10
-  m_Name: ClimbTarget
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &3489282697233048581
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1789915202414512906}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.479, z: -0.409}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 3061061457625510473}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

@@ -77,9 +77,10 @@ public class PlayerCover : MonoBehaviour
     }
     public void EnterCover()
     {
+        input.ClearInput();
         if (controller.IsBusy || isTransition || !finder.hasTarget)
             return;
-
+        controller.InputLocked = true;
         isTransition = true;
         State = CoverState.Entering;
 
@@ -88,9 +89,13 @@ public class PlayerCover : MonoBehaviour
     }
     public void ExitCover()
     {
+        input.ClearInput();
+        controller.InputLocked = true;
+
         controller.CanMove = false;
         State = CoverState.Exiting;
         animator.SetTrigger("ExitCover");
+
     }
     public void FinishEnterCover()
     {
@@ -110,6 +115,7 @@ public class PlayerCover : MonoBehaviour
 
         CanPeek = true;
         input.canAim = true;
+        controller.InputLocked = false;
     }
     public void FinishExitCover()
     {
@@ -129,6 +135,7 @@ public class PlayerCover : MonoBehaviour
         CanPeek = false;
         input.canAim = false;
         input.aim = false;
+        controller.InputLocked = false;
     }
     public void ExitCoverInstant()
     {
@@ -136,6 +143,7 @@ public class PlayerCover : MonoBehaviour
         CanPeek = false;
         input.canAim = false;
         input.aim = false;
+        controller.InputLocked = false;
         State = CoverState.None;
         animator.SetBool("Cover", false);
 

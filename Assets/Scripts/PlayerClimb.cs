@@ -6,6 +6,7 @@ public class PlayerClimb : MonoBehaviour
     private PlayerFindObject finder;
     private ThirdPersonController controller;
     private StarterAssetsInputs input;
+    private Climbable climb;
     private Animator animator;
     private Vector3 startPos;
     private Vector3 endPos;
@@ -46,6 +47,7 @@ public class PlayerClimb : MonoBehaviour
 
     public void TryClimb()
     {
+
         if (controller.IsBusy)
             return;
 
@@ -59,6 +61,8 @@ public class PlayerClimb : MonoBehaviour
         {
             return;
         }
+        if (climb.isJumpObstacle)
+            return;
         // Lấy thông tin từ Raycast đầu tiên
         Vector3 hitPoint = finder.currentHit.point;
         Vector3 normal = finder.currentHit.normal;
@@ -69,7 +73,7 @@ public class PlayerClimb : MonoBehaviour
         // Raycast xuống để tìm mặt trên của tường
         if (!Physics.Raycast(checkPos, Vector3.down, out RaycastHit topHit, climbable.maxClimbHeight + 1f))
             return;
-
+        controller.InputLocked = true;
         controller.State = ThirdPersonController.PlayerState.Climb;
 
         // Đẩy người chơi vào trong một chút sau khi leo xong
@@ -98,6 +102,8 @@ public class PlayerClimb : MonoBehaviour
         controller.State = ThirdPersonController.PlayerState.Locomotion;
 
         controller.CanMove = true;
+        controller.InputLocked = false;
+
         isClimbing = false;
     }
 }

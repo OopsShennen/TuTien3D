@@ -6,20 +6,21 @@ public class PlayerFindObject : MonoBehaviour
     {
         None,
         Cover,
-        Climb
+        Climb,
+        JumpBox
     }
 
     public InteractType currentType;
     [Header("Find Settings")]
     public LayerMask targetLayer;
-    public float distance = 0.5f;
-    private CharacterController _characterController;
+    public float distance = 1f;
+    [SerializeField]
+    private float rayHeight = 1.3f;
     public Transform currentTarget;
     public RaycastHit currentHit;
     public bool hasTarget;
     private void Start()
     {
-        _characterController = GetComponent<CharacterController>();
     }
     private void Update()
     {
@@ -33,7 +34,7 @@ public class PlayerFindObject : MonoBehaviour
         currentType = InteractType.None;
         hasTarget = false;
 
-        Vector3 origin = transform.position + Vector3.up * (_characterController.height * 0.5f);
+        Vector3 origin = transform.position + Vector3.up * rayHeight;
 
         if (Physics.Raycast(origin, transform.forward, out RaycastHit hit, distance, targetLayer))
         {
@@ -48,6 +49,10 @@ public class PlayerFindObject : MonoBehaviour
             else if (hit.collider.TryGetComponent(out Climbable _))
             {
                 currentType = InteractType.Climb;
+            }
+            else if (hit.collider.TryGetComponent(out JumpBox _))
+            {
+                currentType = InteractType.JumpBox;
             }
         }
     }
