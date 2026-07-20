@@ -50,10 +50,7 @@ public class PlayerFindObject : MonoBehaviour
             {
                 currentType = InteractType.Climb;
             }
-            else if (hit.collider.TryGetComponent(out JumpBox _))
-            {
-                currentType = InteractType.JumpBox;
-            }
+            
         }
     }
 

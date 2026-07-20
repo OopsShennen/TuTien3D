@@ -1985,8 +1985,36 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7326017790866764361, guid: c708a3b79cd542b42bbfedb17e213bc1, type: 3}
+      propertyPath: wallOffset
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 7326017790866764361, guid: c708a3b79cd542b42bbfedb17e213bc1, type: 3}
+      propertyPath: jumpSphereRadius
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 7326017790866764361, guid: c708a3b79cd542b42bbfedb17e213bc1, type: 3}
+      propertyPath: jumpDetectDistance
+      value: 0.7
+      objectReference: {fileID: 0}
+    - target: {fileID: 7326017790866764361, guid: c708a3b79cd542b42bbfedb17e213bc1, type: 3}
+      propertyPath: wallDetectDistance
+      value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 7326017790866764361, guid: c708a3b79cd542b42bbfedb17e213bc1, type: 3}
       propertyPath: GroundLayers.m_Bits
       value: 3585
+      objectReference: {fileID: 0}
+    - target: {fileID: 7326017790866764361, guid: c708a3b79cd542b42bbfedb17e213bc1, type: 3}
+      propertyPath: wallRunLayer.m_Bits
+      value: 8192
+      objectReference: {fileID: 0}
+    - target: {fileID: 7326017790866764361, guid: c708a3b79cd542b42bbfedb17e213bc1, type: 3}
+      propertyPath: jumpObstacleLayer.m_Bits
+      value: 4096
+      objectReference: {fileID: 0}
+    - target: {fileID: 7326017790866764361, guid: c708a3b79cd542b42bbfedb17e213bc1, type: 3}
+      propertyPath: wallRunDistanceMultiplier
+      value: 2.2
       objectReference: {fileID: 0}
     - target: {fileID: 7326017790866764366, guid: c708a3b79cd542b42bbfedb17e213bc1, type: 3}
       propertyPath: m_DefaultControlScheme
@@ -22852,6 +22880,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 3927036902478264970, guid: 2ea99a2807fb08342aba6b787b54f1b1, type: 3}
+      propertyPath: m_Layer
+      value: 13
+      objectReference: {fileID: 0}
     - target: {fileID: 4444295403630235834, guid: 2ea99a2807fb08342aba6b787b54f1b1, type: 3}
       propertyPath: m_LocalScale.y
       value: 5.4402704
@@ -22899,6 +22931,10 @@ PrefabInstance:
     - target: {fileID: 5607054912767404322, guid: 2ea99a2807fb08342aba6b787b54f1b1, type: 3}
       propertyPath: m_Name
       value: WallCanClimb (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5607054912767404322, guid: 2ea99a2807fb08342aba6b787b54f1b1, type: 3}
+      propertyPath: m_Layer
+      value: 13
       objectReference: {fileID: 0}
     - target: {fileID: 6370180370172426091, guid: 2ea99a2807fb08342aba6b787b54f1b1, type: 3}
       propertyPath: isHighClimb
@@ -32763,7 +32799,7 @@ MonoBehaviour:
   targetLayer:
     serializedVersion: 2
     m_Bits: 3072
-  distance: 2
+  distance: 0.5
   rayHeight: 0.3
   currentTarget: {fileID: 0}
   hasTarget: 0
@@ -32838,8 +32874,8 @@ MonoBehaviour:
   thirdPersonFollow: {fileID: 909908697}
   cover: {fileID: 2069000426}
   controller: {fileID: 2069000432}
-  normalFOV: 30
-  aimFOV: 25
+  normalFOV: 40
+  aimFOV: 35
   normalShoulder: {x: 1, y: 0, z: 0}
   rightPeekShoulder: {x: 5, y: 0, z: 0}
   leftPeekShoulder: {x: -5, y: 0, z: 0}
@@ -35492,6 +35528,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 663917527055861649, guid: f66c2b3b7f67ad64aaf1e6fef21c6437, type: 3}
+      propertyPath: m_Layer
+      value: 12
+      objectReference: {fileID: 0}
     - target: {fileID: 4114541815006242472, guid: f66c2b3b7f67ad64aaf1e6fef21c6437, type: 3}
       propertyPath: jumpEnd
       value: 
@@ -35503,6 +35543,10 @@ PrefabInstance:
     - target: {fileID: 4755162942836293496, guid: f66c2b3b7f67ad64aaf1e6fef21c6437, type: 3}
       propertyPath: m_Name
       value: JumpBox
+      objectReference: {fileID: 0}
+    - target: {fileID: 4755162942836293496, guid: f66c2b3b7f67ad64aaf1e6fef21c6437, type: 3}
+      propertyPath: m_Layer
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 6544865329756735685, guid: f66c2b3b7f67ad64aaf1e6fef21c6437, type: 3}
       propertyPath: m_LocalPosition.x
@@ -35544,7 +35588,8 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 3973329494200294722, guid: f66c2b3b7f67ad64aaf1e6fef21c6437, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []

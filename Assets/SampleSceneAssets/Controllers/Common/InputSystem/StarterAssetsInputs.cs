@@ -15,6 +15,7 @@ namespace StarterAssets
         public bool aim;
         public bool canAim;
         public bool slide;
+        public bool roll;
         [Header("Movement Settings")]
 		public bool analogMovement;
 
@@ -51,6 +52,10 @@ namespace StarterAssets
 
               aim = value.isPressed;
           }*/
+        public void OnRoll(InputValue value)
+        {
+            roll = value.isPressed;
+        }
         public void OnSlide(InputValue value)
         {
             if (controller.InputLocked)
@@ -145,6 +150,7 @@ namespace StarterAssets
             crouch = false;
             slide = false;
             aim = false;
+            roll = false;
         }
     }
 	

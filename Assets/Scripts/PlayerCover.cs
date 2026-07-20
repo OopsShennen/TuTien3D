@@ -119,41 +119,37 @@ public class PlayerCover : MonoBehaviour
     }
     public void FinishExitCover()
     {
+        FinishExitCoverLogic();
+
+        animator.SetBool("Cover", false);
+    }
+    private void FinishExitCoverLogic()
+    {
         controller.State = PlayerState.Locomotion;
-        input.move = Vector2.zero;
 
         controller.IsCover = false;
 
-        animator.SetBool("Cover", false);
-
         controller.CanMove = true;
 
-        isTransition = false;
-
-        State = CoverState.None;
-
         CanPeek = false;
+
         input.canAim = false;
         input.aim = false;
+
         controller.InputLocked = false;
+
+        State = CoverState.None;
     }
     public void ExitCoverInstant()
     {
-        controller.IsCover = false;
-        CanPeek = false;
-        input.canAim = false;
-        input.aim = false;
-        controller.InputLocked = false;
-        State = CoverState.None;
-        animator.SetBool("Cover", false);
+        FinishExitCoverLogic();
 
-        controller.CanMove = true;
+        animator.SetBool("Cover", false);
 
         animator.ResetTrigger("StandToCover");
         animator.ResetTrigger("ExitCover");
-        input.move = Vector2.zero;
-        animator.SetFloat("VelocityX", 0);
-        animator.SetFloat("VelocityY", 0);
+
+        animator.CrossFade("Locomotion", 0.1f);
     }
     IEnumerator MoveToCover()
     {

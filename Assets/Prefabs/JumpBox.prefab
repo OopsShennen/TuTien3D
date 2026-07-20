@@ -42,7 +42,6 @@ GameObject:
   - component: {fileID: 6544865329756735685}
   - component: {fileID: 8531534734171527272}
   - component: {fileID: 8781859749688016055}
-  - component: {fileID: 3973329494200294722}
   - component: {fileID: 4114541815006242472}
   - component: {fileID: 2475480583008419137}
   m_Layer: 10
@@ -125,18 +124,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &3973329494200294722
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4755162942836293496}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4a032f798bb5aaa4ea83e8f32d726c34, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::JumpBox
 --- !u!114 &4114541815006242472
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -19,6 +19,8 @@ namespace StarterAssets
             Climb,
             Slide,
             Jump,
+            Roll,
+            WallRun,
             JumpObstacle,
             Fall,
             Crouch
@@ -47,6 +49,21 @@ namespace StarterAssets
         [Tooltip("The height the player can jump")]
         public float JumpHeight = 1.2f;
         private bool IsJumpObstacle;
+        [SerializeField] private LayerMask jumpObstacleLayer;
+        [SerializeField] private float jumpDetectDistance = 1.5f;
+        [SerializeField] private float jumpSphereRadius = 0.35f;
+
+        [Header("Player Wall Run")]
+        [SerializeField] private LayerMask wallRunLayer;
+        [SerializeField] private float wallDetectDistance = 0.8f;
+
+        private RaycastHit wallHit;
+        private bool hasWallRun;
+        [SerializeField] private float wallRunDistanceMultiplier = 1.3f;
+
+        [SerializeField] private float wallOffset = 0.28f;
+
+        private bool wallOnRight;
 
         [Tooltip("The character uses its own gravity value. The engine default is -9.81f")]
         public float Gravity = -15.0f;
@@ -74,6 +91,13 @@ namespace StarterAssets
         [Header("Player Crouched")]
         [Tooltip("If the character is crouched or not. Not part of the CharacterController built in crouched check")]
         public bool Crouched;
+
+        [Header("Player Roll")]
+        [SerializeField] private float rollCooldown = 0.6f;
+
+        private float lastRollTime = -Mathf.Infinity;
+
+        public bool IsRolling;
 
         [Header("Player Cover")]
         [Tooltip("If the character is covered or not. Not part of the CharacterController built in covered check")]
@@ -128,8 +152,7 @@ namespace StarterAssets
         private StarterAssetsInputs _input;
         private GameObject _mainCamera;
         private PlayerCover cover;
-        private PlayerFindObject finder;
-        private Climbable currentClimb;
+
 
         public bool InputLocked;
         private const float _threshold = 0.01f;
@@ -165,7 +188,6 @@ namespace StarterAssets
             _input = GetComponent<StarterAssetsInputs>();
             _playerInput = GetComponent<PlayerInput>();
             cover = GetComponent<PlayerCover>();
-            finder = GetComponent<PlayerFindObject>();
 
             AssignAnimationIDs();
 
@@ -184,10 +206,12 @@ namespace StarterAssets
 
             GroundedCheck();
 
-            if (State != PlayerState.JumpObstacle)
+            if (State != PlayerState.JumpObstacle &&
+                State != PlayerState.WallRun)
             {
                 JumpAndGravity();
                 CheckJumpObstacle();
+                CheckWallRun();
                 Move();
             }
 
@@ -203,6 +227,19 @@ namespace StarterAssets
                 {
                     // Hủy yêu cầu Slide nếu không hợp lệ
                     _input.slide = false;
+                }
+            }
+
+            if (_input.roll)
+            {
+                if (CanRoll())
+                {
+                    _input.roll = false;
+                    StartRoll();
+                }
+                else
+                {
+                    _input.roll = false;
                 }
             }
 
@@ -223,6 +260,7 @@ namespace StarterAssets
         public bool IsBusy =>
                 InputLocked ||
                 IsSlide ||
+                IsRolling ||
                 State == PlayerState.Climb ||
                 State == PlayerState.Cover;
 
@@ -233,11 +271,176 @@ namespace StarterAssets
                 transform.position.z);
             Grounded = Physics.CheckSphere(spherePosition, GroundedRadius, GroundLayers,
                 QueryTriggerInteraction.Ignore);
-
+            if (Grounded)
+            {
+                hasWallRun = false;
+            }
             // update animator if using character
             if (_hasAnimator)
             {
                 _animator.SetBool(_animIDGrounded, Grounded);
+            }
+        }
+        private bool CanRoll()
+        {
+            return !IsRolling &&
+                   Grounded &&
+                   State == PlayerState.Locomotion &&
+                   Time.time >= lastRollTime + rollCooldown;
+        }
+        private void StartRoll()
+        {
+            if (IsBusy)
+                return;
+
+            bool sprintRoll = _input.sprint && _input.move != Vector2.zero;
+
+            State = PlayerState.Roll;
+            IsRolling = true;
+            CanMove = false;
+            _controller.enabled = false;
+            _animator.applyRootMotion = true;
+            _verticalVelocity = 0f;
+            lastRollTime = Time.time;
+
+            if (sprintRoll)
+                _animator.SetTrigger("SprintRoll");
+            else
+                _animator.SetTrigger("StandRoll");
+        }
+        public void EndRoll()
+        {
+            State = PlayerState.Locomotion;
+
+            IsRolling = false;
+            _controller.enabled = true;
+            CanMove = true;
+
+            _animator.applyRootMotion = false;
+        }
+        private void CheckWallRun()
+        {
+            if (State != PlayerState.Fall &&
+                State != PlayerState.Jump)
+                return;
+
+            if (Grounded)
+                return;
+
+            if (hasWallRun)
+                return;
+
+            if (!_input.sprint)
+                return;
+
+            if (_input.move.y < 0.5f)
+                return;
+            Vector3 origin = transform.position + Vector3.up;
+
+            if (Physics.Raycast(origin,
+                transform.right,
+                out wallHit,
+                wallDetectDistance,
+                wallRunLayer))
+            {
+                StartWallRun(wallHit, true);
+                return;
+            }
+
+            if (Physics.Raycast(origin,
+                -transform.right,
+                out wallHit,
+                wallDetectDistance,
+                wallRunLayer))
+            {
+                StartWallRun(wallHit, false);
+            }
+        }
+        private bool TryFindJumpObstacle(out Climbable climb)
+        {
+            climb = null;
+
+            Vector3 origin = transform.position + Vector3.up * 1f;
+
+            if (Physics.SphereCast(
+                    origin,
+                    jumpSphereRadius,
+                    transform.forward,
+                    out RaycastHit hit,
+                    jumpDetectDistance,
+                    jumpObstacleLayer,
+                    QueryTriggerInteraction.Ignore))
+            {
+                climb = hit.collider.GetComponent<Climbable>();
+
+                if (climb != null && climb.isJumpObstacle)
+                {
+                    Debug.DrawLine(origin, hit.point, Color.yellow, 1f);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        private void StartWallRun(RaycastHit hit, bool rightWall)
+        {
+            hasWallRun = true;
+
+            wallOnRight = rightWall;
+
+            State = PlayerState.WallRun;
+
+            CanMove = false;
+
+            Vector3 wallForward = Vector3.Cross(hit.normal, Vector3.up);
+
+            if (Vector3.Dot(wallForward, transform.forward) < 0)
+                wallForward = -wallForward;
+
+            transform.rotation = Quaternion.LookRotation(wallForward);
+
+            _controller.enabled = false;
+
+            _animator.applyRootMotion = true;
+
+            if (rightWall)
+            {
+                _animator.CrossFade("WallRunRight", 0.1f);
+            }
+            else
+            {
+                _animator.CrossFade("WallRunLeft", 0.1f);
+            }
+        }
+        public void EndWallRun()
+        {
+
+            State = PlayerState.Fall;
+
+            _controller.enabled = true;
+
+            _animator.applyRootMotion = false;
+
+            CanMove = true;
+
+        }
+        private void SnapToWallRun()
+        {
+            if (State != PlayerState.WallRun)
+                return;
+
+            Vector3 origin = transform.position + Vector3.up;
+
+            Vector3 dir = wallOnRight ? transform.right : -transform.right;
+
+            if (Physics.Raycast(origin, dir, out RaycastHit hit,
+                wallDetectDistance + 0.5f,
+                wallRunLayer))
+            {
+                // chỉ dịch theo phương vuông góc với tường
+                float distance = hit.distance - wallOffset;
+
+                transform.position -= hit.normal * distance;
             }
         }
         private void CheckJumpObstacle()
@@ -251,31 +454,18 @@ namespace StarterAssets
             if (IsJumpObstacle)
                 return;
 
-            if (!_input.sprint)
+            if (!_input.sprint || _input.move.y < 0.8f)
                 return;
 
-            if (_input.move.y < 0.8f)
-                return;
-
-            if (!finder.hasTarget)
-                return;
-
-            if (finder.currentType != PlayerFindObject.InteractType.Climb)
-                return;
-
-            Climbable climb = finder.currentTarget.GetComponent<Climbable>();
-
-            if (climb == null)
-                return;
-
-            // Chỉ Box mới JumpObstacle
-            if (!climb.isJumpObstacle)
+            if (!TryFindJumpObstacle(out Climbable climb))
                 return;
 
             StartJumpObstacle(climb.transform);
         }
+        
         private void StartJumpObstacle(Transform obstacle)
         {
+
             IsJumpObstacle = true;
 
             State = PlayerState.JumpObstacle;
@@ -284,8 +474,9 @@ namespace StarterAssets
 
             _controller.enabled = false;
             _animator.applyRootMotion = true;
+            int index = Random.Range(0, 2);
 
-            _animator.ResetTrigger("JumpBox");
+            _animator.SetInteger("JumpBoxIndex", index);
             _animator.SetTrigger("JumpBox");
         }
         public void EndJumpObstacle()
@@ -300,14 +491,58 @@ namespace StarterAssets
         }
         private void OnAnimatorMove()
         {
-            if (State != PlayerState.JumpObstacle)
+            if (!_animator.applyRootMotion)
                 return;
-            transform.position += _animator.deltaPosition;
+
+            switch (State)
+            {
+                case PlayerState.Roll:
+                case PlayerState.Slide:
+                case PlayerState.JumpObstacle:
+                    ApplyGroundRootMotion();
+                    break;
+
+                case PlayerState.WallRun:
+                    ApplyWallRunRootMotion();
+                    break;
+            }
+        }
+        private void ApplyGroundRootMotion()
+        {
+            Vector3 delta = _animator.deltaPosition;
+
+            // Chỉ lấy rotation Y
+            Quaternion deltaRot = _animator.deltaRotation;
+            Vector3 euler = deltaRot.eulerAngles;
+            euler.x = 0;
+            euler.z = 0;
+
+            transform.rotation *= Quaternion.Euler(euler);
+
+            // Chỉ di chuyển ngang
+            transform.position += new Vector3(delta.x, 0f, delta.z);
+
+            // Bám mặt đất
+            if (Physics.Raycast(transform.position + Vector3.up,
+                                Vector3.down,
+                                out RaycastHit hit,
+                                3f,
+                                GroundLayers))
+            {
+                transform.position = new Vector3(
+                    transform.position.x,
+                    hit.point.y,
+                    transform.position.z);
+            }
+        }
+        private void ApplyWallRunRootMotion()
+        {
+            Vector3 delta = _animator.deltaPosition * wallRunDistanceMultiplier;
+
+            transform.position += delta;
             transform.rotation *= _animator.deltaRotation;
 
-            if (!_animator.GetCurrentAnimatorStateInfo(0)
-                .IsName("JumpBox"))
-                return;
+            SnapToWallRun();
         }
         private void CameraRotation()
         {
@@ -524,7 +759,9 @@ namespace StarterAssets
             {
                 if (State != PlayerState.Climb &&
                        State != PlayerState.Slide &&
-                       State != PlayerState.Cover && State != PlayerState.JumpObstacle)
+                       State != PlayerState.Cover &&
+                       State != PlayerState.Roll &&
+                       State != PlayerState.JumpObstacle)
                 {
                     State = Crouched
                         ? PlayerState.Crouch

@@ -61,8 +61,8 @@ public class PlayerClimb : MonoBehaviour
         {
             return;
         }
-        if (climb.isJumpObstacle)
-            return;
+        /*if (climb.isJumpObstacle)
+            return;*/
         // Lấy thông tin từ Raycast đầu tiên
         Vector3 hitPoint = finder.currentHit.point;
         Vector3 normal = finder.currentHit.normal;
